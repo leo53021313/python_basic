@@ -11,7 +11,12 @@ random_int = random.randint(1, 100)
 # print("Rand: " + str(random_int))
 
 while True:
-    user_input = int(input("請輸入 1 到 100 之間的整數: "))
+    try:
+        user_input = int(input("請輸入 1 到 100 之間的整數: "))
+    except Exception:
+        print("請輸入數字")
+        continue  # 跳過下面的程式執行，進入到下一個迴圈
+
     if user_input > 100 or user_input < 1:
         print("請填寫 1 到 100 的整數!")
         continue
