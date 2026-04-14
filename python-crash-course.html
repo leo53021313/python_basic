@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Python 速成核心課程</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --surface2: #1a1a26;
+  --border: #2a2a3a;
+  --text: #e0e0e8;
+  --text-dim: #8888a0;
+  --accent: #22d68a;
+  --accent2: #18b876;
+  --accent-glow: rgba(34,214,138,0.15);
+  --code-bg: #0d0d14;
+  --warn: #f59e0b;
+  --error: #ef4444;
+  --correct: #22d68a;
+  --wrong: #ef4444;
+  --tag-bg: rgba(34,214,138,0.1);
+  --tag-border: rgba(34,214,138,0.25);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans TC', sans-serif;
+  line-height: 1.75;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 20px 20px 80px;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 48px 0 32px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 36px;
+}
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, var(--accent), #4ade80, var(--accent2));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+.header .sub {
+  color: var(--text-dim);
+  font-size: 0.95rem;
+}
+.header .sub strong { color: var(--accent); font-weight: 700; }
+
+/* Progress bar */
+.progress-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg);
+  padding: 12px 0 8px;
+  border-bottom: 1px solid var(--border);
+}
+.progress-bar {
+  height: 4px;
+  background: var(--surface2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #4ade80);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.progress-label {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+  text-align: right;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Nav pills */
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 20px 0 28px;
+}
+.nav-pill {
+  padding: 6px 14px;
+  font-size: 0.78rem;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'JetBrains Mono', monospace;
+}
+.nav-pill:hover { border-color: var(--accent); color: var(--text); }
+.nav-pill.active {
+  background: var(--accent-glow);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+.nav-pill.completed {
+  background: rgba(34,214,138,0.08);
+  border-color: var(--accent2);
+  color: var(--accent2);
+}
+.nav-pill.completed::before { content: "✓ "; }
+
+/* Lesson */
+.lesson { display: none; }
+.lesson.active { display: block; }
+
+.lesson-header {
+  margin-bottom: 28px;
+}
+.lesson-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+.lesson-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+}
+.lesson-time {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.lesson-time::before { content: "⏱ "; }
+
+/* Content blocks */
+.concept {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.concept h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--accent);
+}
+.concept p, .concept li {
+  font-size: 0.92rem;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+.concept ul { padding-left: 20px; }
+.concept li { list-style: none; position: relative; padding-left: 16px; }
+.concept li::before {
+  content: "›";
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.compare-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-right: 4px;
+}
+.compare-tag.cpp { background: #1e3a5f; color: #60a5fa; }
+.compare-tag.js  { background: #3b3510; color: #facc15; }
+.compare-tag.py  { background: var(--tag-bg); color: var(--accent); border: 1px solid var(--tag-border); }
+
+/* Code blocks */
+pre {
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: #c8c8d8;
+}
+pre .kw { color: #c084fc; }
+pre .fn { color: #60a5fa; }
+pre .str { color: #34d399; }
+pre .cmt { color: #555570; font-style: italic; }
+pre .num { color: #f59e0b; }
+pre .op { color: #f472b6; }
+pre .type { color: #22d3ee; }
+pre .dec { color: #fb923c; }
+
+.tip {
+  background: rgba(34,214,138,0.06);
+  border-left: 3px solid var(--accent);
+  padding: 12px 16px;
+  margin: 12px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.85rem;
+}
+.tip::before {
+  content: "💡 ";
+}
+.warn-box {
+  background: rgba(245,158,11,0.08);
+  border-left: 3px solid var(--warn);
+  padding: 12px 16px;
+  margin: 12px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.85rem;
+}
+.warn-box::before { content: "⚠️ "; }
+
+/* Quiz section */
+.quiz-section {
+  margin-top: 36px;
+  padding-top: 28px;
+  border-top: 2px solid var(--border);
+}
+.quiz-section h3 {
+  font-size: 1.15rem;
+  font-weight: 900;
+  margin-bottom: 20px;
+  color: var(--warn);
+}
+.quiz-section h3::before { content: "📝 "; }
+
+.quiz-q {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.quiz-q .q-text {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.quiz-q .q-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.quiz-q pre { margin: 8px 0 12px; font-size: 0.8rem; }
+
+.q-options { display: flex; flex-direction: column; gap: 8px; }
+.q-opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.88rem;
+  font-family: 'JetBrains Mono', monospace;
+}
+.q-opt:hover { border-color: var(--accent); background: var(--accent-glow); }
+.q-opt.selected { border-color: var(--accent); background: var(--accent-glow); }
+.q-opt.correct { border-color: var(--correct); background: rgba(34,214,138,0.15); }
+.q-opt.wrong { border-color: var(--wrong); background: rgba(239,68,68,0.1); }
+.q-opt.disabled { pointer-events: none; opacity: 0.6; }
+.q-opt.correct.disabled, .q-opt.wrong.disabled { opacity: 1; }
+
+.q-opt .marker {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.q-opt.selected .marker { border-color: var(--accent); color: var(--accent); }
+.q-opt.correct .marker { border-color: var(--correct); background: var(--correct); color: #000; }
+.q-opt.wrong .marker { border-color: var(--wrong); background: var(--wrong); color: #fff; }
+
+.q-explain {
+  margin-top: 10px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  display: none;
+  line-height: 1.6;
+}
+.q-explain.show { display: block; }
+.q-explain.correct-ex { background: rgba(34,214,138,0.08); color: var(--correct); }
+.q-explain.wrong-ex { background: rgba(239,68,68,0.06); color: #fca5a5; }
+
+.quiz-result {
+  text-align: center;
+  padding: 20px;
+  margin-top: 20px;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: none;
+}
+.quiz-result.show { display: block; }
+.quiz-result .score {
+  font-size: 2rem;
+  font-weight: 900;
+  font-family: 'JetBrains Mono', monospace;
+}
+.quiz-result .score.perfect { color: var(--correct); }
+.quiz-result .score.good { color: var(--warn); }
+.quiz-result .score.retry { color: var(--error); }
+
+/* Submit / Next */
+.btn-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  justify-content: flex-end;
+}
+.btn {
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.btn-primary {
+  background: var(--accent);
+  color: #000;
+}
+.btn-primary:hover { background: #2ee89a; transform: translateY(-1px); }
+.btn-secondary {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { border-color: var(--accent); }
+
+/* Responsive */
+@media (max-width: 600px) {
+  .app { padding: 12px 12px 60px; }
+  .header h1 { font-size: 1.6rem; }
+  .lesson-title { font-size: 1.3rem; }
+  pre { font-size: 0.75rem; padding: 12px; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <h1>Python 速成核心課程</h1>
+  <div class="sub">專為有 <strong>C/C++ · JS</strong> 基礎的工程師設計 — 8 堂課切入產業即戰力</div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  <div class="progress-label" id="progressLabel">0 / 8 完成</div>
+</div>
+
+<div class="nav" id="lessonNav"></div>
+
+<div id="lessonContainer"></div>
+
+</div>
+
+<script>
+const LESSONS = [
+// ===== LESSON 1 =====
+{
+  id: 1,
+  title: "語法骨架：10 分鐘搞定 Python 語法",
+  time: "15 min",
+  content: `
+<div class="concept">
+<h3>Python vs C/JS — 三個最大差異</h3>
+<p><span class="compare-tag py">Python</span> 用<b>縮排</b>取代大括號 <code>{}</code>，<b>不需要分號</b>，<b>不需要宣告型別</b>。</p>
+<pre><span class="cmt"># C++ 要寫: int x = 10;</span>
+<span class="cmt"># JS 要寫:  let x = 10;</span>
+<span class="cmt"># Python 直接：</span>
+x <span class="op">=</span> <span class="num">10</span>
+name <span class="op">=</span> <span class="str">"Rich"</span>
+is_ready <span class="op">=</span> <span class="kw">True</span>    <span class="cmt"># 注意：大寫 T / F</span></pre>
+</div>
+
+<div class="concept">
+<h3>條件 / 迴圈 — 告別大括號</h3>
+<pre><span class="cmt"># if / elif / else</span>
+<span class="kw">if</span> x <span class="op">></span> <span class="num">5</span>:
+    <span class="fn">print</span>(<span class="str">"大於 5"</span>)
+<span class="kw">elif</span> x <span class="op">==</span> <span class="num">5</span>:
+    <span class="fn">print</span>(<span class="str">"等於 5"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"小於 5"</span>)
+
+<span class="cmt"># for 迴圈 — 沒有 i++ 那套</span>
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">5</span>):       <span class="cmt"># 0,1,2,3,4</span>
+    <span class="fn">print</span>(i)
+
+<span class="kw">for</span> name <span class="kw">in</span> [<span class="str">"Alice"</span>, <span class="str">"Bob"</span>]:
+    <span class="fn">print</span>(name)
+
+<span class="cmt"># while</span>
+<span class="kw">while</span> x <span class="op">></span> <span class="num">0</span>:
+    x <span class="op">-=</span> <span class="num">1</span></pre>
+<div class="tip">Python 的 <code>for</code> 其實更像 JS 的 <code>for...of</code>，不是 C 的三段式。</div>
+</div>
+
+<div class="concept">
+<h3>函式定義</h3>
+<pre><span class="kw">def</span> <span class="fn">greet</span>(name, times<span class="op">=</span><span class="num">1</span>):
+    <span class="str">"""打招呼（這是 docstring）"""</span>
+    <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(times):
+        <span class="fn">print</span>(<span class="str">f"Hello, </span>{name}<span class="str">!"</span>)
+    <span class="kw">return</span> times
+
+<span class="fn">greet</span>(<span class="str">"Rich"</span>)           <span class="cmt"># times 用預設值 1</span>
+<span class="fn">greet</span>(<span class="str">"Rich"</span>, times<span class="op">=</span><span class="num">3</span>)  <span class="cmt"># keyword argument</span></pre>
+<div class="tip"><code>f"Hello, {name}!"</code> 是 f-string，等同 JS 的模板字串 <code>\`Hello, \${name}!\`</code></div>
+</div>
+`,
+  quiz: [
+    {
+      q: "以下哪個是合法的 Python 程式碼？",
+      opts: [
+        "if (x > 5) { print('yes') }",
+        "if x > 5:\\n    print('yes')",
+        "if x > 5 then print('yes')",
+        "IF x > 5: print('yes')"
+      ],
+      ans: 1,
+      explain: "Python 用冒號 + 縮排取代大括號，不需要小括號包條件（但加了也不會錯），沒有 then 關鍵字，if 是小寫。"
+    },
+    {
+      q: "range(3) 產生的數字是？",
+      opts: ["1, 2, 3", "0, 1, 2", "0, 1, 2, 3", "1, 2"],
+      ans: 1,
+      explain: "range(n) 從 0 開始，到 n-1 結束。range(3) → 0, 1, 2。跟 C 的 for(int i=0; i<3; i++) 一樣。"
+    },
+    {
+      q: "Python 的布林值怎麼寫？",
+      opts: ["true / false", "TRUE / FALSE", "True / False", "1 / 0"],
+      ans: 2,
+      explain: "Python 布林值是首字母大寫：True 和 False。這跟 JS/C 的全小寫不同。"
+    }
+  ]
+},
+
+// ===== LESSON 2 =====
+{
+  id: 2,
+  title: "資料結構四天王：list / dict / tuple / set",
+  time: "20 min",
+  content: `
+<div class="concept">
+<h3>List — 就是你熟悉的陣列</h3>
+<pre>nums <span class="op">=</span> [<span class="num">1</span>, <span class="num">2</span>, <span class="num">3</span>, <span class="num">4</span>, <span class="num">5</span>]
+nums.<span class="fn">append</span>(<span class="num">6</span>)         <span class="cmt"># push</span>
+nums.<span class="fn">pop</span>()              <span class="cmt"># 移除最後一個</span>
+nums[<span class="num">0</span>]                 <span class="cmt"># 取第一個 → 1</span>
+nums[<span class="op">-</span><span class="num">1</span>]                <span class="cmt"># 取最後一個 → 5</span>
+nums[<span class="num">1</span>:<span class="num">3</span>]               <span class="cmt"># slice → [2, 3]</span>
+<span class="fn">len</span>(nums)               <span class="cmt"># 長度</span></pre>
+<div class="tip"><code>[-1]</code> 負數索引是 Python 殺手級功能，C/JS 做不到。</div>
+</div>
+
+<div class="concept">
+<h3>Dict — 就是 JS 的 Object / C++ 的 map</h3>
+<pre>user <span class="op">=</span> {
+    <span class="str">"name"</span>: <span class="str">"Rich"</span>,
+    <span class="str">"role"</span>: <span class="str">"engineer"</span>,
+    <span class="str">"level"</span>: <span class="num">99</span>
+}
+user[<span class="str">"name"</span>]             <span class="cmt"># "Rich"</span>
+user.<span class="fn">get</span>(<span class="str">"age"</span>, <span class="num">0</span>)       <span class="cmt"># 不存在回傳預設值 0</span>
+user[<span class="str">"age"</span>] <span class="op">=</span> <span class="num">30</span>         <span class="cmt"># 新增/更新</span>
+
+<span class="cmt"># 遍歷</span>
+<span class="kw">for</span> key, val <span class="kw">in</span> user.<span class="fn">items</span>():
+    <span class="fn">print</span>(<span class="str">f"</span>{key}<span class="str">: </span>{val}<span class="str">"</span>)</pre>
+</div>
+
+<div class="concept">
+<h3>Tuple 與 Set</h3>
+<pre><span class="cmt"># Tuple — 不可變的 list</span>
+point <span class="op">=</span> (<span class="num">10</span>, <span class="num">20</span>)         <span class="cmt"># 建立後不能改</span>
+x, y <span class="op">=</span> point             <span class="cmt"># 解構賦值！</span>
+
+<span class="cmt"># Set — 不重複集合</span>
+tags <span class="op">=</span> {<span class="str">"python"</span>, <span class="str">"ai"</span>, <span class="str">"python"</span>}
+<span class="fn">print</span>(tags)  <span class="cmt"># {'python', 'ai'} — 自動去重</span>
+<span class="str">"ai"</span> <span class="kw">in</span> tags  <span class="cmt"># True — O(1) 查找</span></pre>
+<div class="tip">函式要回傳多個值？直接 <code>return x, y</code>，Python 自動包成 tuple。</div>
+</div>
+
+<div class="concept">
+<h3>List Comprehension — Python 的靈魂語法</h3>
+<pre><span class="cmt"># 傳統寫法</span>
+squares <span class="op">=</span> []
+<span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>):
+    squares.<span class="fn">append</span>(i <span class="op">**</span> <span class="num">2</span>)
+
+<span class="cmt"># Pythonic 一行搞定</span>
+squares <span class="op">=</span> [i <span class="op">**</span> <span class="num">2</span> <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">10</span>)]
+
+<span class="cmt"># 帶條件篩選</span>
+evens <span class="op">=</span> [i <span class="kw">for</span> i <span class="kw">in</span> <span class="fn">range</span>(<span class="num">20</span>) <span class="kw">if</span> i <span class="op">%</span> <span class="num">2</span> <span class="op">==</span> <span class="num">0</span>]
+
+<span class="cmt"># Dict comprehension</span>
+name_len <span class="op">=</span> {n: <span class="fn">len</span>(n) <span class="kw">for</span> n <span class="kw">in</span> [<span class="str">"Alice"</span>, <span class="str">"Bob"</span>]}</pre>
+<div class="warn-box">面試和實務中，list comprehension 出現頻率極高，一定要會。</div>
+</div>
+`,
+  quiz: [
+    {
+      q: "取得 list 最後一個元素的 Pythonic 寫法？",
+      opts: ["nums[len(nums)-1]", "nums[-1]", "nums.last()", "nums.end()"],
+      ans: 1,
+      explain: "nums[-1] 是 Python 的負數索引，直接取最後一個元素。最 Pythonic 也最簡潔。"
+    },
+    {
+      q: "<code>d.get('key', 0)</code> 當 key 不存在時回傳什麼？",
+      opts: ["None", "拋出 KeyError", "0", "空字串"],
+      ans: 2,
+      explain: ".get(key, default) 找不到 key 時回傳 default 值。直接用 d['key'] 才會拋出 KeyError。"
+    },
+    {
+      q: "<code>[x*2 for x in range(3)]</code> 的結果是？",
+      opts: ["[2, 4, 6]", "[0, 2, 4]", "[1, 2, 3]", "[0, 1, 2]"],
+      ans: 1,
+      explain: "range(3) → 0,1,2，每個乘以 2 → [0, 2, 4]。"
+    }
+  ]
+},
+
+// ===== LESSON 3 =====
+{
+  id: 3,
+  title: "模組與套件：import 的世界觀",
+  time: "15 min",
+  content: `
+<div class="concept">
+<h3>import 語法 — 比 C/JS 都簡單</h3>
+<pre><span class="kw">import</span> os                     <span class="cmt"># 整個模組</span>
+<span class="kw">import</span> json <span class="kw">as</span> j              <span class="cmt"># 別名</span>
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path      <span class="cmt"># 只引特定東西</span>
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime, timedelta</pre>
+</div>
+
+<div class="concept">
+<h3>常用標準庫速查</h3>
+<ul>
+  <li><code>os</code> / <code>pathlib</code> — 檔案系統操作（你的老朋友）</li>
+  <li><code>json</code> — JSON 讀寫，API 開發必備</li>
+  <li><code>datetime</code> — 日期時間處理</li>
+  <li><code>re</code> — 正則表達式</li>
+  <li><code>collections</code> — Counter、defaultdict 等實用容器</li>
+  <li><code>typing</code> — 型別提示（Python 3.5+）</li>
+</ul>
+</div>
+
+<div class="concept">
+<h3>pip — Python 的 npm</h3>
+<pre><span class="cmt"># 安裝套件</span>
+pip install requests fastapi pandas
+
+<span class="cmt"># requirements.txt — 等於 package.json</span>
+pip freeze > requirements.txt
+pip install -r requirements.txt
+
+<span class="cmt"># 虛擬環境 — 隔離專案依賴</span>
+python -m venv .venv
+source .venv/bin/activate    <span class="cmt"># Linux/Mac</span>
+.venv\\Scripts\\activate       <span class="cmt"># Windows</span></pre>
+<div class="tip">你的 AI Gateway 專案已經在用 venv 了！每個專案一個 venv 是最佳實踐。</div>
+</div>
+
+<div class="concept">
+<h3>自己寫模組</h3>
+<pre><span class="cmt"># utils.py</span>
+<span class="kw">def</span> <span class="fn">clean_text</span>(s):
+    <span class="kw">return</span> s.<span class="fn">strip</span>().<span class="fn">lower</span>()
+
+<span class="cmt"># main.py</span>
+<span class="kw">from</span> utils <span class="kw">import</span> clean_text
+<span class="fn">print</span>(<span class="fn">clean_text</span>(<span class="str">"  Hello  "</span>))  <span class="cmt"># "hello"</span></pre>
+<div class="tip">一個 .py 檔就是一個模組，一個資料夾（含 <code>__init__.py</code>）就是一個 package。</div>
+</div>
+`,
+  quiz: [
+    {
+      q: "以下哪個等同於 <code>npm install</code>？",
+      opts: ["python install", "pip install -r requirements.txt", "import requirements", "pip freeze"],
+      ans: 1,
+      explain: "pip install -r requirements.txt 根據依賴清單安裝所有套件，等同 npm install 讀 package.json。"
+    },
+    {
+      q: "<code>from pathlib import Path</code> 做了什麼？",
+      opts: [
+        "引入整個 pathlib 模組",
+        "只引入 Path 這一個 class",
+        "建立一個路徑",
+        "刪除 pathlib 模組"
+      ],
+      ans: 1,
+      explain: "from X import Y 語法只把 Y 引入當前命名空間，不用寫 pathlib.Path，直接用 Path 就好。"
+    },
+    {
+      q: "Python 虛擬環境 (venv) 的用途是？",
+      opts: [
+        "加速程式執行",
+        "隔離專案的套件依賴",
+        "壓縮程式碼",
+        "加密原始碼"
+      ],
+      ans: 1,
+      explain: "venv 讓每個專案有獨立的 Python 套件環境，避免不同專案間的版本衝突，就像 node_modules 的概念。"
+    }
+  ]
+},
+
+// ===== LESSON 4 =====
+{
+  id: 4,
+  title: "檔案與例外處理：with 和 try 的正確姿勢",
+  time: "15 min",
+  content: `
+<div class="concept">
+<h3>讀寫檔案 — with 是王道</h3>
+<pre><span class="cmt"># 讀檔</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"data.txt"</span>, <span class="str">"r"</span>, encoding<span class="op">=</span><span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    content <span class="op">=</span> f.<span class="fn">read</span>()        <span class="cmt"># 整個讀入字串</span>
+    <span class="cmt"># 或 f.readlines()       → list of lines</span>
+    <span class="cmt"># 或 for line in f:      → 逐行迭代（省記憶體）</span>
+
+<span class="cmt"># 寫檔</span>
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"output.txt"</span>, <span class="str">"w"</span>, encoding<span class="op">=</span><span class="str">"utf-8"</span>) <span class="kw">as</span> f:
+    f.<span class="fn">write</span>(<span class="str">"Hello\\n"</span>)
+
+<span class="cmt"># JSON 讀寫（你在 AI Gateway 常用的）</span>
+<span class="kw">import</span> json
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"config.json"</span>) <span class="kw">as</span> f:
+    data <span class="op">=</span> json.<span class="fn">load</span>(f)      <span class="cmt"># 檔案 → dict</span>
+
+<span class="kw">with</span> <span class="fn">open</span>(<span class="str">"out.json"</span>, <span class="str">"w"</span>) <span class="kw">as</span> f:
+    json.<span class="fn">dump</span>(data, f, ensure_ascii<span class="op">=</span><span class="kw">False</span>, indent<span class="op">=</span><span class="num">2</span>)</pre>
+<div class="tip"><code>with</code> 會自動關檔，等同 C++ 的 RAII 或 C# 的 using，不需要手動 <code>f.close()</code>。</div>
+</div>
+
+<div class="concept">
+<h3>例外處理 — try / except</h3>
+<pre><span class="kw">try</span>:
+    result <span class="op">=</span> <span class="num">10</span> <span class="op">/</span> <span class="num">0</span>
+<span class="kw">except</span> <span class="type">ZeroDivisionError</span> <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="str">f"錯誤: </span>{e}<span class="str">"</span>)
+<span class="kw">except</span> <span class="type">Exception</span> <span class="kw">as</span> e:
+    <span class="fn">print</span>(<span class="str">f"其他錯誤: </span>{e}<span class="str">"</span>)
+<span class="kw">else</span>:
+    <span class="fn">print</span>(<span class="str">"沒出錯才會跑這裡"</span>)
+<span class="kw">finally</span>:
+    <span class="fn">print</span>(<span class="str">"不管怎樣都會跑"</span>)</pre>
+<div class="warn-box">永遠避免空的 <code>except:</code> — 至少寫 <code>except Exception</code>，否則連 Ctrl+C 都攔不住。</div>
+</div>
+
+<div class="concept">
+<h3>自訂例外</h3>
+<pre><span class="kw">class</span> <span class="type">QuotaExceeded</span>(<span class="type">Exception</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, user_id, limit):
+        self.user_id <span class="op">=</span> user_id
+        <span class="fn">super</span>().<span class="fn">__init__</span>(<span class="str">f"User </span>{user_id}<span class="str"> exceeded quota </span>{limit}<span class="str">"</span>)
+
+<span class="cmt"># 使用</span>
+<span class="kw">raise</span> <span class="type">QuotaExceeded</span>(<span class="str">"rich"</span>, <span class="num">100</span>)</pre>
+</div>
+`,
+  quiz: [
+    {
+      q: "<code>with open('f.txt') as f:</code> 結束後會發生什麼？",
+      opts: [
+        "什麼都不會發生",
+        "檔案自動關閉",
+        "檔案被刪除",
+        "需要手動呼叫 f.close()"
+      ],
+      ans: 1,
+      explain: "with 是 context manager，離開區塊時自動呼叫 __exit__()，對檔案來說就是 close()。"
+    },
+    {
+      q: "try/except 中，else 區塊何時執行？",
+      opts: [
+        "永遠執行",
+        "只有在沒發生例外時",
+        "只有在發生例外時",
+        "在 finally 之後"
+      ],
+      ans: 1,
+      explain: "else 只在 try 區塊完全沒有拋出任何例外時才執行。這跟 for/else 的設計理念類似。"
+    },
+    {
+      q: "<code>json.dump(data, f, ensure_ascii=False)</code> 中 ensure_ascii=False 的作用？",
+      opts: [
+        "壓縮 JSON 大小",
+        "允許輸出非 ASCII 字元（如中文）",
+        "禁止使用 ASCII 編碼",
+        "自動轉換編碼"
+      ],
+      ans: 1,
+      explain: "預設 ensure_ascii=True 會把中文轉成 \\uXXXX 跳脫序列，設 False 才能直接輸出中文。"
+    }
+  ]
+},
+
+// ===== LESSON 5 =====
+{
+  id: 5,
+  title: "OOP 精華：Class 沒你想的複雜",
+  time: "20 min",
+  content: `
+<div class="concept">
+<h3>基本 Class 定義</h3>
+<pre><span class="kw">class</span> <span class="type">User</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, role<span class="op">=</span><span class="str">"member"</span>):
+        self.name <span class="op">=</span> name       <span class="cmt"># 實例屬性</span>
+        self.role <span class="op">=</span> role
+        self._quota <span class="op">=</span> <span class="num">100</span>     <span class="cmt"># 慣例：_ 開頭表示"私有"</span>
+
+    <span class="kw">def</span> <span class="fn">greet</span>(self):
+        <span class="kw">return</span> <span class="str">f"Hi, I'm </span>{self.name}<span class="str"> (</span>{self.role}<span class="str">)"</span>
+
+    <span class="kw">def</span> <span class="fn">__repr__</span>(self):       <span class="cmt"># 等同 C++ operator<< 或 JS toString</span>
+        <span class="kw">return</span> <span class="str">f"User(</span>{self.name}<span class="str">)"</span>
+
+u <span class="op">=</span> <span class="type">User</span>(<span class="str">"Rich"</span>, <span class="str">"admin"</span>)
+<span class="fn">print</span>(u.<span class="fn">greet</span>())  <span class="cmt"># "Hi, I'm Rich (admin)"</span></pre>
+<div class="tip"><code>self</code> 就是 C++ 的 <code>this</code>，但 Python 要求你顯式寫在參數列。</div>
+</div>
+
+<div class="concept">
+<h3>繼承與 super()</h3>
+<pre><span class="kw">class</span> <span class="type">Admin</span>(<span class="type">User</span>):
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, name, department):
+        <span class="fn">super</span>().<span class="fn">__init__</span>(name, role<span class="op">=</span><span class="str">"admin"</span>)
+        self.department <span class="op">=</span> department
+
+    <span class="kw">def</span> <span class="fn">greet</span>(self):  <span class="cmt"># Override</span>
+        <span class="kw">return</span> <span class="str">f"Admin </span>{self.name}<span class="str"> @ </span>{self.department}<span class="str">"</span>
+
+a <span class="op">=</span> <span class="type">Admin</span>(<span class="str">"Rich"</span>, <span class="str">"IT"</span>)
+<span class="fn">isinstance</span>(a, <span class="type">User</span>)    <span class="cmt"># True</span></pre>
+</div>
+
+<div class="concept">
+<h3>@property — 優雅的 getter/setter</h3>
+<pre><span class="kw">class</span> <span class="type">Account</span>:
+    <span class="kw">def</span> <span class="fn">__init__</span>(self, balance):
+        self._balance <span class="op">=</span> balance
+
+    <span class="dec">@property</span>
+    <span class="kw">def</span> <span class="fn">balance</span>(self):
+        <span class="kw">return</span> self._balance
+
+    <span class="dec">@balance.setter</span>
+    <span class="kw">def</span> <span class="fn">balance</span>(self, value):
+        <span class="kw">if</span> value <span class="op"><</span> <span class="num">0</span>:
+            <span class="kw">raise</span> <span class="type">ValueError</span>(<span class="str">"不能為負數"</span>)
+        self._balance <span class="op">=</span> value
+
+acc <span class="op">=</span> <span class="type">Account</span>(<span class="num">1000</span>)
+<span class="fn">print</span>(acc.balance)   <span class="cmt"># 1000 — 看起來像屬性，實際走 getter</span></pre>
+<div class="tip">@property 讓你像存取屬性一樣呼叫方法，對外的介面不用改。你的 AI Gateway 裡的 SQLAlchemy model 大量使用這個。</div>
+</div>
+
+<div class="concept">
+<h3>dataclass — 快速建 Model（Python 3.7+）</h3>
+<pre><span class="kw">from</span> dataclasses <span class="kw">import</span> dataclass
+
+<span class="dec">@dataclass</span>
+<span class="kw">class</span> <span class="type">ChatMessage</span>:
+    role: <span class="type">str</span>
+    content: <span class="type">str</span>
+    tokens: <span class="type">int</span> <span class="op">=</span> <span class="num">0</span>
+
+msg <span class="op">=</span> <span class="type">ChatMessage</span>(<span class="str">"user"</span>, <span class="str">"Hello"</span>, <span class="num">5</span>)
+<span class="fn">print</span>(msg)  <span class="cmt"># ChatMessage(role='user', content='Hello', tokens=5)</span></pre>
+<div class="tip">@dataclass 自動幫你生成 __init__、__repr__、__eq__，類似 Kotlin 的 data class。</div>
+</div>
+`,
+  quiz: [
+    {
+      q: "Python class method 的第一個參數 <code>self</code> 等同於什麼？",
+      opts: ["C 的 NULL", "C++ 的 this", "JS 的 prototype", "靜態變數"],
+      ans: 1,
+      explain: "self 就是實例本身的參考，功能完全等同 C++ 的 this 指標，只是 Python 要求顯式宣告。"
+    },
+    {
+      q: "<code>@dataclass</code> 裝飾器會自動產生哪些方法？",
+      opts: [
+        "只有 __init__",
+        "__init__、__repr__、__eq__",
+        "所有 magic methods",
+        "只有 __str__"
+      ],
+      ans: 1,
+      explain: "@dataclass 自動生成 __init__（根據欄位定義）、__repr__（字串表示）、__eq__（比較運算）。"
+    },
+    {
+      q: "<code>_</code> 開頭的屬性（如 <code>self._quota</code>）代表什麼？",
+      opts: [
+        "系統保留變數",
+        "慣例上的私有屬性",
+        "唯讀屬性",
+        "靜態屬性"
+      ],
+      ans: 1,
+      explain: "Python 沒有真正的 private，單底線 _ 是慣例表示「不要從外部直接存取」，雙底線 __ 才會做 name mangling。"
+    }
+  ]
+},
+
+// ===== LESSON 6 =====
+{
+  id: 6,
+  title: "async/await：非同步 IO 與你的 FastAPI",
+  time: "20 min",
+  content: `
+<div class="concept">
+<h3>為什麼需要 async？</h3>
+<p>你的 AI Gateway 用 FastAPI，每個 API 呼叫都是 IO-bound（等 OpenAI 回應、等 DB 查詢）。async 讓 Python 在等待時去處理其他請求，跟 Node.js 的 event loop 概念一樣。</p>
+</div>
+
+<div class="concept">
+<h3>基本語法</h3>
+<pre><span class="kw">import</span> asyncio
+
+<span class="kw">async def</span> <span class="fn">fetch_data</span>(url):
+    <span class="fn">print</span>(<span class="str">f"開始抓 </span>{url}<span class="str">"</span>)
+    <span class="kw">await</span> asyncio.<span class="fn">sleep</span>(<span class="num">1</span>)   <span class="cmt"># 模擬 IO 等待</span>
+    <span class="kw">return</span> {<span class="str">"url"</span>: url, <span class="str">"status"</span>: <span class="num">200</span>}
+
+<span class="cmt"># 在 async 函式內呼叫</span>
+<span class="kw">async def</span> <span class="fn">main</span>():
+    result <span class="op">=</span> <span class="kw">await</span> <span class="fn">fetch_data</span>(<span class="str">"https://api.example.com"</span>)
+    <span class="fn">print</span>(result)
+
+<span class="cmt"># 執行</span>
+asyncio.<span class="fn">run</span>(<span class="fn">main</span>())</pre>
+<div class="tip"><code>async def</code> 定義協程，<code>await</code> 暫停等待結果。跟 JS 的 async/await 幾乎一模一樣！</div>
+</div>
+
+<div class="concept">
+<h3>並行執行 — gather</h3>
+<pre><span class="kw">async def</span> <span class="fn">main</span>():
+    <span class="cmt"># 三個請求同時跑，不是一個等一個</span>
+    results <span class="op">=</span> <span class="kw">await</span> asyncio.<span class="fn">gather</span>(
+        <span class="fn">fetch_data</span>(<span class="str">"url1"</span>),
+        <span class="fn">fetch_data</span>(<span class="str">"url2"</span>),
+        <span class="fn">fetch_data</span>(<span class="str">"url3"</span>),
+    )
+    <span class="cmt"># results 是三個回傳值的 list</span></pre>
+<div class="tip">等同 JS 的 <code>Promise.all([...])</code>，三個 IO 操作同時進行。</div>
+</div>
+
+<div class="concept">
+<h3>FastAPI 實戰中的 async</h3>
+<pre><span class="kw">from</span> fastapi <span class="kw">import</span> FastAPI
+<span class="kw">import</span> httpx
+
+app <span class="op">=</span> <span class="type">FastAPI</span>()
+
+<span class="dec">@app.get</span>(<span class="str">"/chat"</span>)
+<span class="kw">async def</span> <span class="fn">chat</span>(prompt: <span class="type">str</span>):
+    <span class="kw">async with</span> httpx.<span class="type">AsyncClient</span>() <span class="kw">as</span> client:
+        resp <span class="op">=</span> <span class="kw">await</span> client.<span class="fn">post</span>(
+            <span class="str">"https://api.openai.com/v1/chat/completions"</span>,
+            json<span class="op">=</span>{<span class="str">"model"</span>: <span class="str">"gpt-4"</span>, <span class="str">"messages"</span>: [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: prompt}]}
+        )
+    <span class="kw">return</span> resp.<span class="fn">json</span>()</pre>
+<div class="warn-box">FastAPI 路由用 <code>async def</code> 才能享受非同步 IO。用普通 <code>def</code> 也能跑，但會佔住 thread。</div>
+</div>
+`,
+  quiz: [
+    {
+      q: "<code>await</code> 只能用在哪裡？",
+      opts: [
+        "任何函式內",
+        "async def 定義的函式內",
+        "class 的 __init__ 內",
+        "全域作用域"
+      ],
+      ans: 1,
+      explain: "await 只能在 async def 協程函式內使用，就跟 JS 的規則一樣。"
+    },
+    {
+      q: "<code>asyncio.gather(a(), b(), c())</code> 等同於 JS 的什麼？",
+      opts: [
+        "Promise.race()",
+        "Promise.all()",
+        "Promise.any()",
+        "setTimeout()"
+      ],
+      ans: 1,
+      explain: "gather 同時啟動多個協程並等待全部完成，行為等同 Promise.all()。"
+    },
+    {
+      q: "FastAPI 路由為什麼建議用 async def？",
+      opts: [
+        "語法比較短",
+        "IO 等待時不阻塞其他請求",
+        "執行速度更快",
+        "支援更多參數"
+      ],
+      ans: 1,
+      explain: "async def 讓 FastAPI 在等待 IO（API call、DB query）時釋放 event loop 去處理其他請求，提升吞吐量。"
+    }
+  ]
+},
+
+// ===== LESSON 7 =====
+{
+  id: 7,
+  title: "實戰工具鏈：pip + venv + 型別提示 + 除錯",
+  time: "15 min",
+  content: `
+<div class="concept">
+<h3>Type Hints — 讓 Python 有 TypeScript 的感覺</h3>
+<pre><span class="kw">from</span> typing <span class="kw">import</span> Optional, <span class="type">List</span>, <span class="type">Dict</span>
+
+<span class="kw">def</span> <span class="fn">search_users</span>(
+    keyword: <span class="type">str</span>,
+    limit: <span class="type">int</span> <span class="op">=</span> <span class="num">10</span>,
+    active_only: <span class="type">bool</span> <span class="op">=</span> <span class="kw">True</span>
+) <span class="op">-></span> <span class="type">List</span>[<span class="type">Dict</span>[<span class="type">str</span>, <span class="type">any</span>]]:
+    ...
+
+<span class="cmt"># Python 3.10+ 可以更簡潔</span>
+<span class="kw">def</span> <span class="fn">get_user</span>(user_id: <span class="type">int</span>) <span class="op">-></span> <span class="type">dict</span> <span class="op">|</span> <span class="kw">None</span>:
+    ...</pre>
+<div class="tip">Type hints 不會在執行時強制檢查，但 IDE 自動補全和 FastAPI 的 Pydantic 驗證都靠它。</div>
+</div>
+
+<div class="concept">
+<h3>Pydantic — FastAPI 的資料驗證核心</h3>
+<pre><span class="kw">from</span> pydantic <span class="kw">import</span> BaseModel, Field
+
+<span class="kw">class</span> <span class="type">ChatRequest</span>(<span class="type">BaseModel</span>):
+    prompt: <span class="type">str</span> <span class="op">=</span> <span class="fn">Field</span>(min_length<span class="op">=</span><span class="num">1</span>, max_length<span class="op">=</span><span class="num">4000</span>)
+    model: <span class="type">str</span> <span class="op">=</span> <span class="str">"gpt-4"</span>
+    temperature: <span class="type">float</span> <span class="op">=</span> <span class="fn">Field</span>(default<span class="op">=</span><span class="num">0.7</span>, ge<span class="op">=</span><span class="num">0</span>, le<span class="op">=</span><span class="num">2</span>)
+
+<span class="cmt"># 自動驗證</span>
+req <span class="op">=</span> <span class="type">ChatRequest</span>(prompt<span class="op">=</span><span class="str">"hello"</span>)  <span class="cmt"># OK</span>
+req <span class="op">=</span> <span class="type">ChatRequest</span>(prompt<span class="op">=</span><span class="str">""</span>)       <span class="cmt"># ValidationError!</span></pre>
+<div class="tip">你的 AI Gateway 的請求/回應 schema 就是用 Pydantic 做的。</div>
+</div>
+
+<div class="concept">
+<h3>除錯三板斧</h3>
+<pre><span class="cmt"># 1. print 大法 — 永遠的好朋友</span>
+<span class="fn">print</span>(<span class="str">f"DEBUG: </span>{variable<span class="op">=</span>}<span class="str">"</span>)  <span class="cmt"># Python 3.8+ f-string debug</span>
+<span class="cmt"># 輸出: DEBUG: variable=42</span>
+
+<span class="cmt"># 2. breakpoint() — 內建斷點</span>
+<span class="kw">def</span> <span class="fn">process</span>(data):
+    <span class="fn">breakpoint</span>()  <span class="cmt"># 進入互動式 debugger (pdb)</span>
+    <span class="kw">return</span> data
+
+<span class="cmt"># 3. logging — 正式專案用這個</span>
+<span class="kw">import</span> logging
+logging.<span class="fn">basicConfig</span>(level<span class="op">=</span>logging.DEBUG)
+logger <span class="op">=</span> logging.<span class="fn">getLogger</span>(<span class="fn">__name__</span>)
+logger.<span class="fn">info</span>(<span class="str">"Server started"</span>)
+logger.<span class="fn">error</span>(<span class="str">f"Failed: </span>{e}<span class="str">"</span>)</pre>
+</div>
+`,
+  quiz: [
+    {
+      q: "<code>def foo(x: int) -> str:</code> 中的 <code>-> str</code> 代表？",
+      opts: [
+        "函式一定回傳 str",
+        "標示回傳型別的提示（不強制）",
+        "自動轉換回傳值為 str",
+        "語法錯誤"
+      ],
+      ans: 1,
+      explain: "-> str 是 return type hint，是給人和工具看的提示，Python 執行時不會強制檢查。"
+    },
+    {
+      q: "Pydantic 的 BaseModel 主要用途是？",
+      opts: [
+        "ORM 資料庫映射",
+        "資料驗證與序列化",
+        "非同步處理",
+        "記憶體管理"
+      ],
+      ans: 1,
+      explain: "Pydantic BaseModel 做資料驗證（型別檢查、欄位限制）和序列化（dict ↔ JSON ↔ 物件），是 FastAPI 的核心。"
+    },
+    {
+      q: "<code>f\"{x=}\"</code> 這個 f-string 語法會輸出什麼？（假設 x=42）",
+      opts: [
+        "42",
+        "x=42",
+        "{x=}",
+        "Error"
+      ],
+      ans: 1,
+      explain: "Python 3.8+ 的 f-string debug 語法，{x=} 會輸出 'x=42'，自帶變數名稱，debug 超方便。"
+    }
+  ]
+},
+
+// ===== LESSON 8 =====
+{
+  id: 8,
+  title: "產業即戰力：AI / Data 常用套件地圖",
+  time: "15 min",
+  content: `
+<div class="concept">
+<h3>AI 應用開發 — 你的主戰場</h3>
+<pre><span class="cmt"># OpenAI SDK</span>
+<span class="kw">from</span> openai <span class="kw">import</span> OpenAI
+client <span class="op">=</span> <span class="type">OpenAI</span>()
+response <span class="op">=</span> client.chat.completions.<span class="fn">create</span>(
+    model<span class="op">=</span><span class="str">"gpt-4"</span>,
+    messages<span class="op">=</span>[{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"hello"</span>}]
+)
+
+<span class="cmt"># LangChain — AI 應用框架</span>
+<span class="kw">from</span> langchain.chat_models <span class="kw">import</span> ChatOpenAI
+<span class="kw">from</span> langchain.schema <span class="kw">import</span> HumanMessage
+
+<span class="cmt"># ChromaDB — 你已經在用的向量 DB</span>
+<span class="kw">import</span> chromadb
+client <span class="op">=</span> chromadb.<span class="type">Client</span>()
+collection <span class="op">=</span> client.<span class="fn">get_or_create_collection</span>(<span class="str">"docs"</span>)</pre>
+</div>
+
+<div class="concept">
+<h3>資料處理 — 面試常考</h3>
+<pre><span class="kw">import</span> pandas <span class="kw">as</span> pd
+
+<span class="cmt"># 讀 Excel（你做過團體銷售動態表！）</span>
+df <span class="op">=</span> pd.<span class="fn">read_excel</span>(<span class="str">"sales.xlsx"</span>, header<span class="op">=</span><span class="num">3</span>)
+
+<span class="cmt"># 篩選</span>
+taipei <span class="op">=</span> df[df[<span class="str">"city"</span>] <span class="op">==</span> <span class="str">"台北"</span>]
+
+<span class="cmt"># 分組統計</span>
+summary <span class="op">=</span> df.<span class="fn">groupby</span>(<span class="str">"category"</span>)[<span class="str">"revenue"</span>].<span class="fn">sum</span>()
+
+<span class="cmt"># 匯出</span>
+df.<span class="fn">to_csv</span>(<span class="str">"output.csv"</span>, index<span class="op">=</span><span class="kw">False</span>)</pre>
+</div>
+
+<div class="concept">
+<h3>Web 框架 — FastAPI 你已經會了</h3>
+<pre><span class="cmt"># 你已經掌握的 FastAPI 技術棧：</span>
+<span class="cmt"># ✓ FastAPI — Web 框架</span>
+<span class="cmt"># ✓ SQLAlchemy — ORM</span>
+<span class="cmt"># ✓ Pydantic — 資料驗證</span>
+<span class="cmt"># ✓ Uvicorn — ASGI 伺服器</span>
+<span class="cmt"># ✓ JWT — 認證</span>
+<span class="cmt"># ✓ Alembic — DB Migration</span>
+
+<span class="cmt"># 其他你可能需要的：</span>
+<span class="cmt"># - httpx      → 非同步 HTTP 客戶端</span>
+<span class="cmt"># - celery     → 背景任務佇列</span>
+<span class="cmt"># - redis-py   → 快取/佇列</span>
+<span class="cmt"># - pytest     → 單元測試（你的 74 個測試案例）</span></pre>
+</div>
+
+<div class="concept">
+<h3>套件地圖總覽</h3>
+<ul>
+  <li><b>AI 開發</b>：openai · anthropic · langchain · chromadb · transformers</li>
+  <li><b>資料科學</b>：pandas · numpy · matplotlib · scikit-learn</li>
+  <li><b>Web 後端</b>：fastapi · flask · django · sqlalchemy</li>
+  <li><b>爬蟲/自動化</b>：requests · beautifulsoup4 · selenium · scrapy</li>
+  <li><b>DevOps</b>：docker-py · fabric · boto3 (AWS)</li>
+</ul>
+<div class="tip">你已經在用 FastAPI + SQLAlchemy + ChromaDB + OpenAI 了，其實你已經是 Python AI 應用開發者了。這門課只是幫你把散落的知識點連成系統。</div>
+</div>
+`,
+  quiz: [
+    {
+      q: "pandas 讀取 Excel 並跳過前 3 行 header 的寫法？",
+      opts: [
+        "pd.read_excel('f.xlsx', skip=3)",
+        "pd.read_excel('f.xlsx', header=3)",
+        "pd.read_excel('f.xlsx', row=3)",
+        "pd.read_excel('f.xlsx')[3:]"
+      ],
+      ans: 1,
+      explain: "header=3 告訴 pandas 第 4 行（index 3）才是欄位名稱，前面的行自動跳過。你之前處理團體銷售動態表就是用這個。"
+    },
+    {
+      q: "以下哪個是非同步 HTTP 客戶端？",
+      opts: ["requests", "httpx", "urllib", "socket"],
+      ans: 1,
+      explain: "httpx 支援 async/await，可以在 FastAPI 的 async def 路由裡使用。requests 是同步的，會阻塞。"
+    },
+    {
+      q: "你的 AI Gateway 技術棧中，負責 DB Migration 的是？",
+      opts: ["SQLAlchemy", "Pydantic", "Alembic", "ChromaDB"],
+      ans: 2,
+      explain: "Alembic 是 SQLAlchemy 的 migration 工具，管理資料庫 schema 版本，類似 Rails 的 ActiveRecord::Migration。"
+    }
+  ]
+}
+];
+
+// ===== APP STATE =====
+let currentLesson = 0;
+const completed = new Set();
+const quizStates = {};
+
+function init() {
+  renderNav();
+  renderLesson(0);
+  updateProgress();
+}
+
+function renderNav() {
+  const nav = document.getElementById('lessonNav');
+  nav.innerHTML = LESSONS.map((l, i) => 
+    `<div class="nav-pill ${i===currentLesson?'active':''} ${completed.has(i)?'completed':''}" onclick="goToLesson(${i})">L${l.id}</div>`
+  ).join('');
+}
+
+function goToLesson(idx) {
+  currentLesson = idx;
+  renderNav();
+  renderLesson(idx);
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function renderLesson(idx) {
+  const l = LESSONS[idx];
+  const container = document.getElementById('lessonContainer');
+  
+  if (!quizStates[idx]) {
+    quizStates[idx] = { answers: {}, submitted: false };
+  }
+  const qs = quizStates[idx];
+
+  let quizHTML = l.quiz.map((q, qi) => {
+    const optsHTML = q.opts.map((opt, oi) => {
+      let cls = 'q-opt';
+      if (qs.submitted) {
+        cls += ' disabled';
+        if (oi === q.ans) cls += ' correct';
+        else if (qs.answers[qi] === oi) cls += ' wrong';
+      } else if (qs.answers[qi] === oi) {
+        cls += ' selected';
+      }
+      return `<div class="${cls}" onclick="selectAnswer(${idx},${qi},${oi})">
+        <span class="marker">${String.fromCharCode(65+oi)}</span>
+        <span>${opt}</span>
+      </div>`;
+    }).join('');
+
+    let explainHTML = '';
+    if (qs.submitted) {
+      const isCorrect = qs.answers[qi] === q.ans;
+      explainHTML = `<div class="q-explain show ${isCorrect?'correct-ex':'wrong-ex'}">
+        ${isCorrect ? '✅ 正確！' : '❌ 錯誤。'} ${q.explain}
+      </div>`;
+    }
+
+    return `<div class="quiz-q">
+      <div class="q-num">Q${qi+1}</div>
+      <div class="q-text">${q.q}</div>
+      ${optsHTML}
+      ${explainHTML}
+    </div>`;
+  }).join('');
+
+  // Quiz result
+  let resultHTML = '';
+  if (qs.submitted) {
+    const correct = l.quiz.filter((q,i) => qs.answers[i] === q.ans).length;
+    const total = l.quiz.length;
+    const pct = Math.round(correct/total*100);
+    const cls = pct === 100 ? 'perfect' : pct >= 60 ? 'good' : 'retry';
+    resultHTML = `<div class="quiz-result show">
+      <div class="score ${cls}">${correct} / ${total}</div>
+      <div style="color:var(--text-dim);margin-top:8px;font-size:0.85rem">
+        ${pct===100 ? '🎉 全對！太強了' : pct >= 60 ? '👍 不錯，繼續加油' : '💪 再複習一下這課的內容'}
+      </div>
+    </div>`;
+  }
+
+  // Buttons
+  let btnHTML = '<div class="btn-row">';
+  if (!qs.submitted) {
+    const allAnswered = l.quiz.every((_, i) => qs.answers[i] !== undefined);
+    btnHTML += `<button class="btn btn-primary" onclick="submitQuiz(${idx})" ${allAnswered?'':'disabled'}>交卷批改</button>`;
+  } else {
+    if (idx < LESSONS.length - 1) {
+      btnHTML += `<button class="btn btn-primary" onclick="goToLesson(${idx+1})">下一課 →</button>`;
+    } else {
+      btnHTML += `<button class="btn btn-primary" style="background:#f59e0b" disabled>🎓 全部完成！</button>`;
+    }
+  }
+  btnHTML += '</div>';
+
+  container.innerHTML = `
+    <div class="lesson active">
+      <div class="lesson-header">
+        <div class="lesson-num">Lesson ${l.id}</div>
+        <div class="lesson-title">${l.title}</div>
+        <div class="lesson-time">${l.time}</div>
+      </div>
+      ${l.content}
+      <div class="quiz-section">
+        <h3>隨堂小考</h3>
+        ${quizHTML}
+        ${resultHTML}
+        ${btnHTML}
+      </div>
+    </div>
+  `;
+}
+
+function selectAnswer(lessonIdx, qIdx, optIdx) {
+  const qs = quizStates[lessonIdx];
+  if (qs.submitted) return;
+  qs.answers[qIdx] = optIdx;
+  renderLesson(lessonIdx);
+}
+
+function submitQuiz(lessonIdx) {
+  quizStates[lessonIdx].submitted = true;
+  completed.add(lessonIdx);
+  renderLesson(lessonIdx);
+  renderNav();
+  updateProgress();
+}
+
+function updateProgress() {
+  const pct = Math.round(completed.size / LESSONS.length * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressLabel').textContent = `${completed.size} / ${LESSONS.length} 完成`;
+}
+
+init();
+</script>
+</body>
+</html>
